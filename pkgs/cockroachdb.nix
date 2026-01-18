@@ -9,20 +9,16 @@ let
   version = "25.4.3";
   pname = "cockroachdb";
 
-  # For several reasons building cockroach from source has become
-  # nearly impossible. See https://github.com/NixOS/nixpkgs/pull/152626
-  # Therefore we use the pre-build release binary and wrap it with buildFHSUserEnv to
-  # work on nix.
   # You can generate the hashes with
   # nix flake prefetch <url>
   srcs = {
-    aarch64-linux = fetchzip {
-      url = "https://binaries.cockroachdb.com/cockroach-v${version}.linux-arm64.tgz";
-      hash = "sha256-vOtthcHyh9GSMM03grU9b72CHnVus0G0mO3bdggZp2o=";
-    };
     x86_64-linux = fetchzip {
       url = "https://binaries.cockroachdb.com/cockroach-v${version}.linux-amd64.tgz";
       hash = "sha256-PjlsHdmLk7rfCFi5wqlutuvRAP0+fBTxVvd4AV4afNk=";
+    };
+    aarch64-linux = fetchzip {
+      url = "https://binaries.cockroachdb.com/cockroach-v${version}.linux-arm64.tgz";
+      hash = "sha256-vOtthcHyh9GSMM03grU9b72CHnVus0G0mO3bdggZp2o=";
     };
   };
   src =
@@ -39,21 +35,9 @@ buildFHSEnv {
   '';
 
   meta = {
-    homepage = "https://www.cockroachlabs.com";
-    description = "Scalable, survivable, strongly-consistent SQL database";
-    license = with lib.licenses; [
-      bsl11
-      mit
-      cockroachdb-community-license
-    ];
-    sourceProvenance = with lib.sourceTypes; [ binaryNativeCode ];
     platforms = [
       "aarch64-linux"
       "x86_64-linux"
-    ];
-    maintainers = with lib.maintainers; [
-      rushmorem
-      thoughtpolice
     ];
   };
 }

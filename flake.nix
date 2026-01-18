@@ -10,6 +10,7 @@
     {
       overlays.default = final: prev: {
         cockroachdb = final.callPackage ./pkgs/cockroachdb.nix { };
+        molt = final.callPackage ./pkgs/molt.nix { };
       };
 
       packages =
@@ -29,7 +30,7 @@
             };
           in
           {
-            inherit (pkgs) cockroachdb;
+            inherit (pkgs) cockroachdb molt;
             cockroach = pkgs.cockroachdb;
           }
         );
