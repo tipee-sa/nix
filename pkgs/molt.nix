@@ -11,10 +11,12 @@ let
     x86_64-linux = fetchzip {
       url = "https://molt.cockroachdb.com/molt/cli/molt-${version}.linux-amd64.tgz";
       hash = "sha256-Uc275HtRc8N18zwyqPYVCsuu8zZifvKWC/Sxidibt6s=";
+      stripRoot = false;
     };
     aarch64-linux = fetchzip {
       url = "https://molt.cockroachdb.com/molt/cli/molt-${version}.linux-arm64.tgz";
       hash = "sha256-3yvyS/jxyBKw0xWvgWCOVysV1stUg7bR40nBwOnfjb8=";
+      stripRoot = false;
     };
   };
   src =
