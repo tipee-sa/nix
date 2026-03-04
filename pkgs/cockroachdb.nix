@@ -6,7 +6,7 @@
 }:
 
 let
-  version = "25.4.3";
+  version = "26.1.0";
   pname = "cockroachdb";
 
   # You can generate the hashes with
@@ -14,11 +14,11 @@ let
   srcs = {
     x86_64-linux = fetchzip {
       url = "https://binaries.cockroachdb.com/cockroach-v${version}.linux-amd64.tgz";
-      hash = "sha256-PjlsHdmLk7rfCFi5wqlutuvRAP0+fBTxVvd4AV4afNk=";
+      hash = "sha256-7VXmw0Gtypbb2QFCI3n3vXhQmKFYFrwBl5JeApUxOf4=";
     };
     aarch64-linux = fetchzip {
       url = "https://binaries.cockroachdb.com/cockroach-v${version}.linux-arm64.tgz";
-      hash = "sha256-vOtthcHyh9GSMM03grU9b72CHnVus0G0mO3bdggZp2o=";
+      hash = "sha256-1DyjEcmrV/sF/aIKfypBg9B7cN1HNVTME0aYodEduBg=";
     };
   };
   src =

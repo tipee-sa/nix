@@ -4,18 +4,18 @@
 }:
 
 let
-  version = "1.3.4";
+  version = "1.3.6";
   pname = "molt";
 
   srcs = {
     x86_64-linux = fetchzip {
       url = "https://molt.cockroachdb.com/molt/cli/molt-${version}.linux-amd64.tgz";
-      hash = "sha256-Uc275HtRc8N18zwyqPYVCsuu8zZifvKWC/Sxidibt6s=";
+      hash = "sha256-ucLRCJfeuXFjN9VREKWiWdbNZwySx41myJM9ig1brXw=";
       stripRoot = false;
     };
     aarch64-linux = fetchzip {
       url = "https://molt.cockroachdb.com/molt/cli/molt-${version}.linux-arm64.tgz";
-      hash = "sha256-3yvyS/jxyBKw0xWvgWCOVysV1stUg7bR40nBwOnfjb8=";
+      hash = "sha256-iNR6aYUvSYGSXiuImumsROGf3R8c7IhbzCGft8KQ8Bw=";
       stripRoot = false;
     };
   };
