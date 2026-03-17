@@ -20,6 +20,10 @@ let
       url = "https://binaries.cockroachdb.com/cockroach-v${version}.linux-arm64.tgz";
       hash = "sha256-1DyjEcmrV/sF/aIKfypBg9B7cN1HNVTME0aYodEduBg=";
     };
+    aarch64-darwin = {
+      url = "https://binaries.cockroachdb.com/cockroach-v${version}.darwin-11.0-arm64.tgz";
+      hash = "sha256-xBDdvQQZAWWqt3/KVzQg1RyX0Bf5RlrdduPz9jKTZoE=";
+    };
   };
   src =
     srcs.${stdenv.hostPlatform.system} or (throw "Unsupported system: ${stdenv.hostPlatform.system}");
@@ -38,6 +42,7 @@ buildFHSEnv {
     platforms = [
       "aarch64-linux"
       "x86_64-linux"
+      "aarch64-darwin"
     ];
   };
 }
