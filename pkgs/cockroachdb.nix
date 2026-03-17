@@ -7,7 +7,7 @@
 
 let
   version = "26.1.0";
-  pname = "cockroachdb";
+  pname = "cockroachdb-bin";
 
   # You can generate the hashes with
   # nix flake prefetch <url>
