@@ -1,10 +1,5 @@
-#!/usr/bin/env bash
-#
 # Version source: https://molt.cockroachdb.com/molt/cli/versions.txt, keyed on
-# the linux-amd64 asset so that a listed version is, by construction, one we
-# can actually download.
-
-. "$(dirname "$0")/../update-lib.sh"
+# the linux-amd64 asset so a listed version is one we can actually download.
 
 latest_version() {
 	curl -fsSL https://molt.cockroachdb.com/molt/cli/versions.txt |
@@ -27,5 +22,3 @@ verify_version() {
 	got=$(nix run "$repo#molt" -- --version | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -n1)
 	[ "$got" = "$1" ] || die "molt reports '$got', expected '$1'"
 }
-
-update_hashes "$@"

@@ -26,42 +26,37 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-      # First, so that a package moving in the same run is fetched and built
-      # against the base it will land on.
       - name: Update flake inputs
         run: nix flake update --commit-lock-file
 
-      # One upstream being unreachable must not hold back the packages that did
-      # update; failures are reported after the push instead.
-      - name: Update package hashes
-        id: hashes
+      - name: Update packages
+        id: packages
         run: |
           before=$(git rev-parse HEAD)
           failed=()
-          for script in packages/*/update-hashes.sh; do
-            "$script" || failed+=("$script")
+          for hook in packages/*/update.sh; do
+            pname=$(basename "$(dirname "$hook")")
+            echo "::group::$pname"
+            scripts/update.sh "$pname" || failed+=("$pname")
+            echo "::endgroup::"
           done
+
           if [ "$(git rev-parse HEAD)" != "$before" ]; then
             echo "updated=1" >>"$GITHUB_OUTPUT"
           fi
+
           if [ ${#failed[@]} -gt 0 ]; then
             printf 'failed: %s\n' "${failed[@]}" >&2
             echo "failed=1" >>"$GITHUB_OUTPUT"
           fi
 
-      # Runs even when nothing is pushed: a lock bump that breaks the flake
-      # should fail the job on the night it happens, not weeks later when a
-      # package update finally carries it.
       - name: Validate
         run: nix flake check --all-systems --no-build
 
-      # A lock bump on its own is discarded. It moves every store path without
-      # changing what any package contains, so it is not worth a commit of its
-      # own; the next package update carries it.
       - name: Push
-        if: steps.hashes.outputs.updated == '1'
+        if: steps.packages.outputs.updated == '1'
         run: git push
 
       - name: Report updater failures
-        if: steps.hashes.outputs.failed == '1'
+        if: steps.packages.outputs.failed == '1'
         run: exit 1

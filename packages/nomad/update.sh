@@ -1,10 +1,5 @@
-#!/usr/bin/env bash
-#
 # Version source: https://api.releases.hashicorp.com/v1/releases/nomad/latest.
-# The endpoint answers with the newest OSS release; enterprise and musl builds
-# carry a +ent suffix and are rejected by the shape check below.
-
-. "$(dirname "$0")/../update-lib.sh"
+# Enterprise and musl builds carry a +ent suffix and fail the shape check.
 
 latest_version() {
 	local release version
@@ -31,5 +26,3 @@ verify_version() {
 	got=$(nix run "$repo#nomad" -- version | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -n1)
 	[ "$got" = "$1" ] || die "nomad reports '$got', expected '$1'"
 }
-
-update_hashes "$@"
