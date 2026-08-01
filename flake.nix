@@ -3,36 +3,26 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    blueprint.url = "github:numtide/blueprint";
+    blueprint.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs =
-    { self, nixpkgs }:
-    {
-      overlays.default = final: prev: {
-        cockroachdb = final.callPackage ./pkgs/cockroachdb.nix { };
-        molt = final.callPackage ./pkgs/molt.nix { };
+    inputs:
+    let
+      blueprint = inputs.blueprint {
+        inherit inputs;
+        systems = [
+          "x86_64-linux"
+          "aarch64-linux"
+          "aarch64-darwin"
+        ];
       };
-
-      packages =
-        let
-          systems = [
-            "x86_64-linux"
-            "aarch64-linux"
-            "aarch64-darwin"
-          ];
-        in
-        nixpkgs.lib.genAttrs systems (
-          system:
-          let
-            pkgs = import nixpkgs {
-              inherit system;
-              overlays = [ self.overlays.default ];
-            };
-          in
-          {
-            inherit (pkgs) cockroachdb molt;
-            cockroach = pkgs.cockroachdb;
-          }
-        );
+    in
+    blueprint
+    // {
+      # Built against the nixpkgs being extended, not the one locked here, so
+      # that a consumer instantiates a single nixpkgs.
+      overlays.default = final: _prev: blueprint.mkPackagesFor final;
     };
 }

@@ -1,0 +1,13 @@
+{
+  "version": "1.4.2",
+  "sources": {
+    "x86_64-linux": {
+      "url": "https://molt.cockroachdb.com/molt/cli/molt-1.4.2.linux-amd64.tgz",
+      "hash": "sha256-nrTn11twR1CqSztXzNXDhyLN95HeEZnBDYgEvVc/viQ="
+    },
+    "aarch64-linux": {
+      "url": "https://molt.cockroachdb.com/molt/cli/molt-1.4.2.linux-arm64.tgz",
+      "hash": "sha256-cED9D/Js45k8RTeXJFpaBk+uv5XTUd6GIUWbuCMHpT0="
+    }
+  }
+}
