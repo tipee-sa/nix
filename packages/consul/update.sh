@@ -21,6 +21,11 @@ source_url() {
 	printf 'https://releases.hashicorp.com/consul/%s/consul_%s_%s.zip\n' "$1" "$1" "$arch"
 }
 
+verify_source() {
+	verify_gpg_sha256sums hashicorp-release.asc \
+		"https://releases.hashicorp.com/consul/$1/consul_$1_SHA256SUMS" "$3"
+}
+
 verify_version() {
 	local got
 	got=$(nix run "$repo#consul" -- version | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -n1)

@@ -25,6 +25,14 @@ source_url() {
 		"$1" "$target"
 }
 
+# Pinned rather than read from dcg-minisign-release.pub, which ships in the same
+# release as the artifact and so vouches for nothing on its own.
+minisign_key=RWSoYi6NXJWzaRs1mJmOwwXrZfPWcq6MXnQlNMLBYKzlIQTLwuVQG6uO
+
+verify_source() {
+	verify_minisign "$minisign_key" "$(source_url "$1" "$2").minisig" "$3"
+}
+
 verify_version() {
 	local got
 	got=$(nix run "$repo#dcg" -- --version | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -n1)
