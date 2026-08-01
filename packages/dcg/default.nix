@@ -20,7 +20,10 @@ stdenv.mkDerivation {
 
   nativeBuildInputs = lib.optionals stdenv.hostPlatform.isElf [ pkgs.autoPatchelfHook ];
 
-  buildInputs = lib.optionals stdenv.hostPlatform.isElf [ pkgs.glibc ];
+  buildInputs = lib.optionals stdenv.hostPlatform.isElf [
+    pkgs.glibc
+    (lib.getLib stdenv.cc.cc)
+  ];
 
   installPhase = ''
     install -D -m 0755 dcg $out/bin/dcg
