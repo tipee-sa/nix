@@ -16,6 +16,8 @@ jobs:
     timeout-minutes: 60
     permissions:
       contents: write
+    outputs:
+      sha: ${{ steps.push.outputs.sha }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -54,9 +56,22 @@ jobs:
         run: nix flake check --all-systems --no-build
 
       - name: Push
+        id: push
         if: steps.packages.outputs.updated == '1'
-        run: git push
+        run: |
+          git push
+          echo "sha=$(git rev-parse HEAD)" >>"$GITHUB_OUTPUT"
 
       - name: Report updater failures
         if: steps.packages.outputs.failed == '1'
         run: exit 1
+
+  # Not `success()`: a commit that was pushed still needs caching even when a
+  # different package's updater failed afterwards.
+  cache:
+    needs: update
+    if: ${{ !cancelled() && needs.update.outputs.sha != '' }}
+    uses: ./.github/workflows/cache.yml
+    with:
+      ref: ${{ needs.update.outputs.sha }}
+    secrets: inherit

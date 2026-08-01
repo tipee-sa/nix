@@ -1,0 +1,106 @@
+name: Cache
+
+on:
+  workflow_call:
+    inputs:
+      ref:
+        type: string
+        required: true
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Commit, branch or tag to warm the cache for.
+        type: string
+        default: main
+
+permissions:
+  contents: read
+
+jobs:
+  plan:
+    runs-on: nomad
+    timeout-minutes: 15
+    outputs:
+      matrix: ${{ steps.matrix.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref }}
+          persist-credentials: false
+
+      - id: matrix
+        env:
+          # `ubuntu-latest-arm` is an org larger runner whose group forbids
+          # public repositories; a job claiming it here queues forever.
+          RUNNERS: >-
+            {"x86_64-linux": "ubuntu-latest",
+             "aarch64-linux": "ubuntu-24.04-arm",
+             "aarch64-darwin": "macos-latest"}
+        run: |
+          # jq turns an empty stdin into a silent success, so a failed eval
+          # would otherwise reach the build job as `fromJSON('')`.
+          set -o pipefail
+          matrix=$(nix eval --json .#packages --apply 'builtins.mapAttrs (_: builtins.attrNames)' |
+            jq -c --argjson r "$RUNNERS" '[ to_entries[] | {
+              system: .key,
+              runner: ($r[.key] // error("no runner configured for \(.key)")),
+              packages: (.value | join(" "))
+            } ]')
+          echo "matrix=$matrix" >>"$GITHUB_OUTPUT"
+
+  build:
+    needs: plan
+    name: ${{ matrix.system }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.plan.outputs.matrix) }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref }}
+          persist-credentials: false
+
+      - uses: cachix/install-nix-action@v31
+
+      - name: Build and push what is not cached
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.NIX_CACHE_R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.NIX_CACHE_R2_SECRET_ACCESS_KEY }}
+          SIGNING_KEY: ${{ secrets.NIX_CACHE_SIGNING_KEY }}
+          CACHE_URL: ${{ vars.NIX_CACHE_URL }}
+          BUCKET: ${{ vars.NIX_CACHE_R2_BUCKET }}
+          ENDPOINT: ${{ vars.NIX_CACHE_R2_ENDPOINT }}
+          SYSTEM: ${{ matrix.system }}
+          PACKAGES: ${{ matrix.packages }}
+        run: |
+          set -u
+          # An absent secret or variable expands to empty, which nix accepts as
+          # a valid but useless setting rather than rejecting.
+          for var in AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY SIGNING_KEY \
+            CACHE_URL BUCKET ENDPOINT; do
+            [[ -n "${!var:-}" ]] || { echo "::error::$var is not set"; exit 1; }
+          done
+
+          todo=()
+          for pname in $PACKAGES; do
+            attr=".#packages.$SYSTEM.$pname"
+            out=$(nix eval --raw "$attr.outPath")
+            if nix path-info --store "$CACHE_URL" "$out" >/dev/null 2>&1; then
+              echo "$pname: cached"
+            else
+              echo "$pname: missing $out"
+              todo+=("$attr")
+            fi
+          done
+          [ ${#todo[@]} -gt 0 ] || { echo "nothing to build"; exit 0; }
+
+          nix build --no-link --print-build-logs "${todo[@]}"
+
+          umask 077
+          trap 'rm -f "$RUNNER_TEMP/cache-key"' EXIT
+          printf '%s' "$SIGNING_KEY" >"$RUNNER_TEMP/cache-key"
+          nix copy --to "s3://$BUCKET?endpoint=$ENDPOINT&region=auto&compression=zstd&secret-key=$RUNNER_TEMP/cache-key" \
+            "${todo[@]}"
