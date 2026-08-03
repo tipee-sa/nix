@@ -99,7 +99,10 @@ update_one() {
 		return 0
 	fi
 
-	local updated system url hash tmp archive mark
+	local updated system url hash archive mark
+
+	# `tmp` is deliberately not local: the EXIT trap also runs once this
+	# function has returned, in a scope where a local would no longer exist.
 	tmp=$(mktemp -d)
 	trap 'rm -rf "$tmp"' EXIT
 
