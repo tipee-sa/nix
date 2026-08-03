@@ -10,6 +10,11 @@ concurrency:
   group: update
   cancel-in-progress: true
 
+# Not redundant with the block in cache.yml: a called workflow can only
+# downgrade what its caller grants, and the repository default is write.
+permissions:
+  contents: read
+
 jobs:
   update:
     runs-on: nomad
