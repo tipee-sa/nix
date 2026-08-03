@@ -1,0 +1,9 @@
+version: 2
+
+# Actions are pinned by commit hash, which no longer moves when upstream
+# publishes a fix; these pull requests are what advances them.
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
