@@ -1,39 +1,45 @@
-# The tipee style for JS/TS/CSS/Markdown/JSON/YAML.
+# Hands the whole JS tree to oxfmt, on top of the prose style in `markdown.nix`.
 #
-# All three repos already agree on the intent — printWidth 80, proseWrap always —
-# and disagree on the tool: hive runs oxfmt from a committed `.oxfmtrc.json`,
-# mozart and platform run prettier with the settings inline. This module settles
-# it on oxfmt: Prettier-compatible output, and its default `includes` covers
-# tsx/jsx/css/scss/graphql/vue, which mozart's hand-written `includes` list and
-# platform's `**/*.md`-only list both miss.
+# Import this ONLY where Nix owns JS formatting. It is right for hive, whose
+# `nix fmt` already formats `crates/hive-ui/app`, and for mozart and platform,
+# whose prettier `includes` lists are narrower than this by accident rather than
+# by design.
 #
-# Cost of adopting: one reformat commit each in mozart and platform, mostly on
-# files prettier was never looking at. Style itself does not change.
+# It is WRONG for tipee: `react/package.json` defines `"format": "oxfmt"` against
+# its own `react/node_modules/oxfmt`, so pnpm owns that tree. tipee should import
+# `markdown` alone and leave it that way — two formatters on one file is a fight
+# no config setting resolves.
 #
-# The config lives in the store, not in a per-repo dotfile. That is the point:
-# one file here is the org style and a repo cannot drift by editing its own copy.
-# The trade-off is that editors do not see it — see README.
-{ pkgs, ... }:
-let
-  oxfmtrc = (pkgs.formats.json { }).generate "oxfmtrc.json" {
-    printWidth = 80;
-    proseWrap = "always";
-  };
-in
+# The file list is oxfmt's own default `includes` minus `*.md`, which
+# `markdown.nix` already contributes; module lists concatenate.
+{ ... }:
 {
-  programs.oxfmt.enable = true;
+  imports = [ ./markdown.nix ];
 
-  # `-c` makes this config authoritative, so a repo-local `.oxfmtrc.json` is
-  # ignored rather than merged. Do not also pass `--disable-nested-config`: the
-  # two are mutually exclusive in oxfmt's argument parser and it exits 1
-  # ("`--disable-nested-config` is not expected in this context").
-  settings.formatter.oxfmt.options = [
-    "-c"
-    "${oxfmtrc}"
+  programs.oxfmt.includes = [
+    "*.cjs"
+    "*.css"
+    "*.graphql"
+    "*.hbs"
+    "*.html"
+    "*.js"
+    "*.json"
+    "*.json5"
+    "*.jsonc"
+    "*.jsx"
+    "*.mdx"
+    "*.mjs"
+    "*.mustache"
+    "*.scss"
+    "*.ts"
+    "*.tsx"
+    "*.vue"
+    "*.yaml"
+    "*.yml"
   ];
 
-  # ponytail: no shared oxlint config. oxlint resolves its config and plugins
-  # through node, not Nix — hive's `.oxlintrc.json` and the `better-tailwindcss`
-  # rules would have to ship as an npm package to be shared, which is a different
-  # project. Nix owns the tool version here, npm owns the lint rules.
+  # ponytail: no shared oxlint config. oxlint resolves config and plugins through
+  # node, not Nix — sharing hive's `.oxlintrc.json` and its `better-tailwindcss`
+  # rules means shipping an npm package, which is a different project. Nix owns
+  # the tool version here; npm owns the lint rules.
 }

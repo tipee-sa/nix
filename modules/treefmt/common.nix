@@ -1,10 +1,13 @@
-# Formatters every tipee repo already enables, verbatim and identically:
-# hive/treefmt.nix, mozart/nix/treefmt.nix and platform/nix/formatter.nix all
-# set exactly these four.
+# The baseline. `projectRootFile` and nixfmt are set identically by all four
+# repos; shfmt and just by hive, mozart and platform.
 #
-# Import alongside the language modules that apply (`js`, `rust`). Options merge,
-# so a repo adds its own `programs.*` / `settings.formatter.*` on top and
-# overrides a shared value with `lib.mkForce`.
+# tipee enables neither shfmt nor just today, so importing this starts formatting
+# 28 shell scripts and 13 justfiles there — a real reformat commit, not a no-op.
+# Land it separately from the wiring.
+#
+# Import alongside the language modules that apply (`markdown` or `js`, `rust`).
+# Options merge, so a repo adds its own `programs.*` / `settings.formatter.*` on
+# top and overrides a shared value with `lib.mkForce`.
 { lib, ... }:
 {
   # Every tipee repo is a flake, so this is the root marker everywhere.

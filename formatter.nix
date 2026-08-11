@@ -6,6 +6,7 @@
 { inputs, pkgs, ... }:
 let
   treefmt = inputs.treefmt-nix.lib.evalModule pkgs {
+    # `js` pulls in `markdown`, so all four published modules are exercised.
     imports = [
       ./modules/treefmt/common.nix
       ./modules/treefmt/js.nix

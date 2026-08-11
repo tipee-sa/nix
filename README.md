@@ -2,7 +2,7 @@
 
 Single source of truth for what tipee repos share: third-party **packages**,
 **treefmt modules**, and **`lib` helpers**. Consumed as one flake input by hive,
-mozart and platform.
+mozart and platform; tipee does not consume it yet.
 
 ```nix
 tipee.url = "github:tipee-sa/nix";
@@ -36,11 +36,21 @@ repo-shaped locally:
 }).config.build.wrapper
 ```
 
-| module | what it enables |
-| --- | --- |
-| `common` | `projectRootFile`, nixfmt, shfmt, just — all three repos already set exactly these |
-| `js` | oxfmt over JS/TS/CSS/MD/JSON/YAML, config in the store (printWidth 80, proseWrap always) |
-| `rust` | taplo, rustfmt (edition 2024, fenix nightly if present), cargo-sort |
+| module     | what it enables                                                           | who       |
+| ---------- | ------------------------------------------------------------------------- | --------- |
+| `common`   | `projectRootFile`, nixfmt, shfmt, just                                    | all four  |
+| `markdown` | oxfmt on `*.md` only, store-path config (printWidth 80, proseWrap always) | all four  |
+| `js`       | imports `markdown`, widens oxfmt to the JS/TS/CSS/JSON/YAML tree          | not tipee |
+| `rust`     | taplo, rustfmt (edition 2024, fenix nightly if present), cargo-sort       | not tipee |
+
+`markdown` and `js` are split because that is where the four repos actually
+differ. Prose style at 80 columns with `proseWrap = "always"` is the one thing
+all four already agree on. Who owns the _JS tree_ is not: hive lets `nix fmt`
+format `crates/hive-ui/app`, while tipee's `react/package.json` defines
+`"format": "oxfmt"` against its own `react/node_modules/oxfmt`. Import `js`
+there and two formatters fight over the same files. Import `markdown` alone and
+oxfmt stays scoped to `*.md`, which is what tipee's `nix/treefmt.nix` already
+does by hand.
 
 Modules merge, so a repo overrides with `programs.oxfmt.package = …`, extra
 `settings.formatter.*`, or `lib.mkForce` on any shared value. Blueprint
@@ -50,7 +60,7 @@ auto-discovers `modules/<class>/<name>.nix`, so adding a module needs no
 ## lib/
 
 Helpers that need a `pkgs`, so they cannot be flake outputs. Each is a function
-of the *consumer's* `pkgs` — same reason `overlays.default` extends the caller's
+of the _consumer's_ `pkgs` — same reason `overlays.default` extends the caller's
 package set instead of exporting from the nixpkgs locked here.
 
 ```nix
@@ -61,7 +71,8 @@ inherit (inputs.tipee.lib.rust pkgs) devToolchain fleetRustflags;
 - **`lib.image`** — `mkRoot` / `mkImage` over nix2container. This is
   `mozart/nix/image.nix` moved verbatim; the same recipe (buildEnv with cacert +
   fakeNss, `maxLayers = 100`, world-writable `/tmp`, `PATH` + `SSL_CERT_FILE`)
-  is written out six times across the three repos.
+  is written out six times across hive, mozart and platform. tipee builds no
+  images and does not need it.
 - **`lib.rust`** — `devToolchain` (the fenix combine block, byte-identical in
   hive and platform) and `fleetRustflags` (`-C target-cpu=x86-64-v3`, the
   production pool baseline hive and mozart both hardcode). Requires the fenix
@@ -78,11 +89,21 @@ inherit (inputs.tipee.lib.rust pkgs) devToolchain fleetRustflags;
   `tools/accio` and `tools/alohomora` are Cargo workspaces that nothing
   currently formats. oxfmt would also claim `tools/observability-mcp/*.ts`,
   which `deno fmt` owns — exclude those paths from oxfmt locally.
+- **tipee** — the biggest change, and the one to stage carefully. It has no
+  `tipee` input at all yet, so wiring comes first. Import `common` + `markdown`,
+  never `js`. `markdown` replaces `scripts/oxfmtrc.markdown.json` with the
+  store-path config, which is a superset of it — same options, minus a `$schema`
+  pointing into `react/node_modules`. `common` is the expensive part: tipee
+  enables neither shfmt nor just today, so it starts formatting 28 shell scripts
+  and 13 justfiles. Land that as its own commit. Keep the local
+  `settings.on-unmatched = "debug"` — the PHP tree needs it and no other repo
+  does.
 
 ## Deliberately not shared
 
-- **crane setup.** `(crane.mkLib pkgs).overrideToolchain (p: p.fenix.stable.minimalToolchain)`
-  is one line in two repos, and platform uses `buildRustPackage` instead. Adding
+- **crane setup.**
+  `(crane.mkLib pkgs).overrideToolchain (p: p.fenix.stable.minimalToolchain)` is
+  one line in two repos, and platform uses `buildRustPackage` instead. Adding
   crane as an input here — to a repo everything else depends on — to share one
   line is the wrong trade.
 - **`rustfmt.toml`.** rustfmt has no store-path config that rust-analyzer also
@@ -99,6 +120,11 @@ inherit (inputs.tipee.lib.rust pkgs) devToolchain fleetRustflags;
   the `nix-cache.tipee.cloud` block has to be copy-pasted per repo regardless.
 - **terraform / nomad / go / deno formatters.** platform only. Revisit at the
   second repo.
+- **PHP formatters.** tipee only, and `easy-coding-standard.php` runs through
+  composer, not Nix — the same npm-owns-the-rules boundary as oxlint.
+- **A devshell module.** Beyond `lib.rust.devToolchain`: tipee is on
+  `numtide/devshell` (`perSystem.devshell.mkShell`) while the other three use
+  `pkgs.mkShell`, so there is no one shell API to write a fragment against.
 - **Formatter versions.** With `tipee.inputs.nixpkgs.follows = "nixpkgs"`, each
   consumer's nixpkgs picks the oxfmt build — shared config, unshared binary.
   That is the same trade `overlays.default` already makes on purpose.
@@ -107,13 +133,13 @@ inherit (inputs.tipee.lib.rust pkgs) devToolchain fleetRustflags;
 
 `nix fmt` and CI are authoritative and correct. The oxfmt LSP/IDE plugin looks
 for a tree-local `.oxfmtrc.json` and will not find one. Fix when it bites:
-expose the config as a package here and `ln -sf` it from a devshell
-`shellHook`.
+expose the config as a package here and `ln -sf` it from a devshell `shellHook`.
 
 ## Checks
 
 `nix fmt` formats this repo with its own published modules, and
 `checks.<system>.treefmt` fails if the tree is not clean — so a broken module is
 caught here before any consumer sees it. `rust` is imported even though there is
-no Rust code in this tree: its formatters never fire, but the module still has to
-evaluate and its tools still have to build.
+no Rust code in this tree: its formatters never fire, but the module still has
+to evaluate and its tools still have to build. Importing `js` also covers
+`markdown`, so all four modules are exercised.
