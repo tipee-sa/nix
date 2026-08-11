@@ -34,6 +34,7 @@
         "aarch64-linux"
         "aarch64-darwin"
       ];
-      nixpkgs.overlays = [ inputs.tipee.overlays.default ];
+      # No tipee.overlays.default: nothing here needs a tipee package. Add it,
+      # and the package, when something does.
     };
 }

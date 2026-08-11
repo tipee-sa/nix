@@ -19,10 +19,11 @@ nix flake init -t github:tipee-sa/nix#rust
 nix flake init -t github:tipee-sa/nix#javascript
 ```
 
-Working consumers, wired to everything below. `rust` covers the deployed shape:
-crane, `lib.rust.devToolchain` in the dev shell, `fleetRustflags` and
-`lib.image` in the package. `javascript` covers a repo where `nix fmt` owns the
-JS tree.
+Working consumers. `rust` covers the deployed shape: `overlays.default` for
+cockroachdb and `lib.rust.devToolchain` in the dev shell, `fleetRustflags` and
+`lib.image` in the package, crane for the build. `javascript` covers a repo
+where `nix fmt` owns the JS tree, and applies no overlay — every package here is
+infrastructure a JS project has no use for.
 
 Both build as initialised, and both are `nix fmt`-clean on the first run.
 Neither is exercised by this repo's `nix flake check` — they are separate flakes
