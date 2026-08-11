@@ -1,28 +1,21 @@
-# OCI image scaffolding over nix2container.
-#
-# This recipe — `buildEnv` with cacert + fakeNss and `pathsToLink = [ "/bin"
-# "/etc" ]`, then `buildImage` with `maxLayers = 100`, a world-writable /tmp and
-# `PATH` / `SSL_CERT_FILE` in Env — is currently written out six times:
-# hive/packages/hive-server.nix, mozart/nix/image.nix (already factored, this is
-# that file moved), and platform's accio, alohomora, gha-scaleset and
-# nomad-certmanager. platform's dind-rootless opts out of `buildEnv` on purpose
-# (it needs a real directory, not a store symlink) and should keep doing so.
+# OCI image scaffolding over nix2container: `mkRoot` builds an image root,
+# `mkImage` wraps it with the layer and config conventions the fleet expects.
 { pkgs, inputs }:
 let
   inherit (pkgs) lib;
 
   nix2container = inputs.nix2container.packages.${pkgs.stdenv.hostPlatform.system}.nix2container;
 
-  # Layers every image shares: TLS roots for outbound HTTPS, `/etc/passwd` so a
-  # non-root `User` resolves, and a world-writable `/tmp` for anything reaching
-  # for `std::env::temp_dir`. The store is read-only, so the sticky bit has to
-  # come from layer metadata.
   base = {
+    # TLS roots for outbound HTTPS and `/etc/passwd` so a non-root `User`
+    # resolves.
     paths = [
       pkgs.cacert
       pkgs.fakeNss
     ];
 
+    # The store is read-only, so the sticky world-writable bits on `/tmp` can only
+    # come from the layer metadata in `mkImage`.
     tmp = pkgs.runCommand "image-tmp" { } "mkdir -p $out/tmp";
 
     env = [
@@ -34,9 +27,9 @@ in
 {
   inherit nix2container;
 
-  # `/etc` ends up a real directory rather than a symlink into the store,
-  # because two of the paths populate it — which is what lets the docker driver
-  # bind-mount `/etc/resolv.conf` and friends into it.
+  # Two of the linked paths populate `/etc`, which is what keeps it a real
+  # directory instead of a store symlink; the docker driver can then bind-mount
+  # `/etc/resolv.conf` and friends into it.
   mkRoot =
     name: paths:
     pkgs.buildEnv {
@@ -48,13 +41,9 @@ in
       ];
     };
 
-  # `Entrypoint`, not `Cmd`: Nomad's `args` are appended to an entrypoint but
-  # *replace* a bare `Cmd`, so a task that later grows an `args` block would
-  # otherwise try to exec its first flag. hive currently sets `Cmd` — moving it
-  # here is the behaviour change to be aware of when it adopts this.
-  #
-  # `user = null` keeps the image on root; only a deployed server should drop
-  # privileges.
+  # `Entrypoint` rather than `Cmd`: Nomad appends a task's `args` to an
+  # entrypoint but replaces a bare `Cmd`, so a task that later grows an `args`
+  # block would exec its own first flag.
   mkImage =
     {
       name,
@@ -67,8 +56,8 @@ in
     nix2container.buildImage (
       {
         inherit name;
-        # One layer per store path, so an unchanged glibc or cert bundle is
-        # skipped by the registry on the next push.
+        # Lowering this coalesces store paths into shared layers and defeats
+        # registry-side reuse of an unchanged glibc or cert bundle across pushes.
         maxLayers = 100;
         copyToRoot = roots ++ [ base.tmp ];
         perms = [

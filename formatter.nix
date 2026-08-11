@@ -1,27 +1,22 @@
-# `nix fmt` for this repo, built from the modules it publishes — so a broken
-# shared module fails here before any consumer sees it. `rust` is imported even
-# though there is no Rust code in this tree: with no *.rs and no Cargo.toml its
-# formatters never fire, but the module still has to evaluate and its tools still
-# have to build, which is the coverage worth having.
+# `nix fmt` for this repo, built from the modules it publishes.
 { inputs, pkgs, ... }:
 let
   treefmt = inputs.treefmt-nix.lib.evalModule pkgs {
-    # `js` pulls in `markdown`, so all four published modules are exercised.
+    # `rust` stays imported despite there being no Rust here: its formatters
+    # never match a file, but the import is what makes `checks.treefmt` fail when
+    # the module stops evaluating.
     imports = [
       ./modules/treefmt/common.nix
       ./modules/treefmt/js.nix
       ./modules/treefmt/rust.nix
     ];
 
-    # jq writes these on every nightly bump (scripts/update.sh) in its own style.
-    # Letting oxfmt reformat them would fight the updater exactly as it would
-    # fight `cargo sqlx prepare` in hive.
+    # scripts/update.sh rewrites these with jq on every nightly bump.
     settings.global.excludes = [ "packages/*/hashes.json" ];
   };
 in
-# Return the `nix fmt` wrapper, but smuggle the treefmt-nix flake check through
-# passthru so checks/treefmt.nix can reuse *this* evaluation — same idiom as
-# platform/nix/formatter.nix.
+# checks/treefmt.nix reads `passthru.check`. Both must come from this one
+# evaluation, or the check and `nix fmt` can disagree on what is clean.
 treefmt.config.build.wrapper.overrideAttrs (old: {
   passthru = (old.passthru or { }) // {
     check = treefmt.config.build.check;

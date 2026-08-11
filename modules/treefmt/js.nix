@@ -1,21 +1,14 @@
-# Hands the whole JS tree to oxfmt, on top of the prose style in `markdown.nix`.
+# Extends `markdown` to hand the whole JS tree to oxfmt.
 #
-# Import this ONLY where Nix owns JS formatting. It is right for hive, whose
-# `nix fmt` already formats `crates/hive-ui/app`, and for mozart and platform,
-# whose prettier `includes` lists are narrower than this by accident rather than
-# by design.
-#
-# It is WRONG for tipee: `react/package.json` defines `"format": "oxfmt"` against
-# its own `react/node_modules/oxfmt`, so pnpm owns that tree. tipee should import
-# `markdown` alone and leave it that way — two formatters on one file is a fight
-# no config setting resolves.
-#
-# The file list is oxfmt's own default `includes` minus `*.md`, which
-# `markdown.nix` already contributes; module lists concatenate.
+# Import only where Nix owns JS formatting. Where a package manager formats the
+# same files — an `oxfmt` or `prettier` script in package.json — two formatters
+# end up fighting over every file, which no setting here resolves; import
+# `markdown` alone there.
 { ... }:
 {
   imports = [ ./markdown.nix ];
 
+  # oxfmt's default `includes` less `*.md`, which `markdown.nix` contributes.
   programs.oxfmt.includes = [
     "*.cjs"
     "*.css"
@@ -37,9 +30,4 @@
     "*.yaml"
     "*.yml"
   ];
-
-  # ponytail: no shared oxlint config. oxlint resolves config and plugins through
-  # node, not Nix — sharing hive's `.oxlintrc.json` and its `better-tailwindcss`
-  # rules means shipping an npm package, which is a different project. Nix owns
-  # the tool version here; npm owns the lint rules.
 }

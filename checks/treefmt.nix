@@ -1,4 +1,3 @@
-# `nix flake check` gate: fails if any in-tree file is not treefmt-clean, which
-# also means the published treefmt modules evaluate and build. Reuses the
-# formatter's evaluation via its passthru (see formatter.nix).
+# Fails if the tree is not treefmt-clean, which also requires every module
+# formatter.nix imports to evaluate and its formatters to build.
 { perSystem, flake, ... }: perSystem.self.formatter.passthru.check flake

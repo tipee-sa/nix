@@ -6,9 +6,9 @@
     blueprint.url = "github:numtide/blueprint";
     blueprint.inputs.nixpkgs.follows = "nixpkgs";
 
-    # Needed by lib/image.nix and modules/treefmt/. Both are already inputs of
-    # every consumer, so add `tipee.inputs.<name>.follows = "<name>"` there to
-    # keep a single copy in the closure — as they already do for blueprint.
+    # Used by lib/image.nix and modules/treefmt/. A consumer holding either input
+    # should redirect it with `tipee.inputs.<name>.follows`, or its closure
+    # carries two copies.
     nix2container.url = "github:nlewo/nix2container";
     nix2container.inputs.nixpkgs.follows = "nixpkgs";
     treefmt-nix.url = "github:numtide/treefmt-nix";
