@@ -12,6 +12,22 @@ tipee.inputs.nix2container.follows = "nix2container";
 tipee.inputs.treefmt-nix.follows = "treefmt-nix";
 ```
 
+## templates/
+
+```
+nix flake init -t github:tipee-sa/nix#rust
+nix flake init -t github:tipee-sa/nix#javascript
+```
+
+Working consumers, wired to everything below. `rust` covers the deployed shape:
+crane, `lib.rust.devToolchain` in the dev shell, `fleetRustflags` and
+`lib.image` in the package. `javascript` covers a repo where `nix fmt` owns the
+JS tree.
+
+Both build as initialised, and both are `nix fmt`-clean on the first run.
+Neither is exercised by this repo's `nix flake check` — they are separate flakes
+— so changing a module means re-initialising one to confirm it still works.
+
 ## packages/
 
 `fetchzip` wrappers around upstream releases: cockroachdb, consul, dcg, molt,
