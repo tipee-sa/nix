@@ -1,17 +1,17 @@
 {
-  "version": "2.0.3",
+  "version": "2.0.4",
   "sources": {
     "x86_64-linux": {
-      "url": "https://releases.hashicorp.com/consul/2.0.3/consul_2.0.3_linux_amd64.zip",
-      "hash": "sha256-NW0jP4Mt/zSWxt+FxpxphJfVamIj+xBFquP0CoR3uak="
+      "url": "https://releases.hashicorp.com/consul/2.0.4/consul_2.0.4_linux_amd64.zip",
+      "hash": "sha256-PigDAbs5HAmPUxLDEEfWRms2B3DwtlAHC2z4GI1RJ6A="
     },
     "aarch64-linux": {
-      "url": "https://releases.hashicorp.com/consul/2.0.3/consul_2.0.3_linux_arm64.zip",
-      "hash": "sha256-8K8/0d3yDV9+H3xM30C9+Wl67yK+u7TEIDxs0dFSzSM="
+      "url": "https://releases.hashicorp.com/consul/2.0.4/consul_2.0.4_linux_arm64.zip",
+      "hash": "sha256-+CDCQTfOEY2d2EAexSYyoUqttyDtiiJWFZ64hbyrIfc="
     },
     "aarch64-darwin": {
-      "url": "https://releases.hashicorp.com/consul/2.0.3/consul_2.0.3_darwin_arm64.zip",
-      "hash": "sha256-Eh+ml2CBSGjtucnW6f9//Ntme9l014J69Lik7ljVvEQ="
+      "url": "https://releases.hashicorp.com/consul/2.0.4/consul_2.0.4_darwin_arm64.zip",
+      "hash": "sha256-hCc0ACr2+bMY0pXJ7vhDMX2ePiZrqjW9IRJnwy1VHlc="
     }
   }
 }
