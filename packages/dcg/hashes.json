@@ -1,17 +1,17 @@
 {
-  "version": "0.14.4",
+  "version": "0.15.1",
   "sources": {
     "x86_64-linux": {
-      "url": "https://github.com/Dicklesworthstone/destructive_command_guard/releases/download/v0.14.4/dcg-x86_64-unknown-linux-musl.tar.xz",
-      "hash": "sha256-ASwurrxDiYeZvFr8cJZA771DvExRbHr6KL8S4zyoSW4="
+      "url": "https://github.com/Dicklesworthstone/destructive_command_guard/releases/download/v0.15.1/dcg-x86_64-unknown-linux-musl.tar.xz",
+      "hash": "sha256-PXUfy9Kt3Xz0yBWd2ff3HcM8tuotnzd8lTW1zZKBIFo="
     },
     "aarch64-linux": {
-      "url": "https://github.com/Dicklesworthstone/destructive_command_guard/releases/download/v0.14.4/dcg-aarch64-unknown-linux-gnu.tar.xz",
-      "hash": "sha256-lIgzdCHOOEYG8vZpkqMYt/STzB5y57srnY39TDSE15s="
+      "url": "https://github.com/Dicklesworthstone/destructive_command_guard/releases/download/v0.15.1/dcg-aarch64-unknown-linux-gnu.tar.xz",
+      "hash": "sha256-CS+6bU+CQViLwadhX5K7yNqBrsm1/7FRSdhJYLbMt8E="
     },
     "aarch64-darwin": {
-      "url": "https://github.com/Dicklesworthstone/destructive_command_guard/releases/download/v0.14.4/dcg-aarch64-apple-darwin.tar.xz",
-      "hash": "sha256-fpTrvDsd7AH9JJ1FlENlpUyn2G3c2xXqV7gu9/QFIm8="
+      "url": "https://github.com/Dicklesworthstone/destructive_command_guard/releases/download/v0.15.1/dcg-aarch64-apple-darwin.tar.xz",
+      "hash": "sha256-76kd6xYKOPFvSTpqc0imH6qffjv890ej64IL9jkiPCM="
     }
   }
 }
