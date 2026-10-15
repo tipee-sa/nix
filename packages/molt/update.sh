@@ -2,23 +2,23 @@
 # the linux-amd64 asset so a listed version is one we can actually download.
 
 latest_version() {
-	curl -fsSL https://molt.cockroachdb.com/molt/cli/versions.txt |
-		sed -n 's#.*/molt-\([0-9][0-9.]*\)\.linux-amd64\.tgz$#\1#p' |
-		grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | highest
+  curl -fsSL https://molt.cockroachdb.com/molt/cli/versions.txt |
+    sed -n 's#.*/molt-\([0-9][0-9.]*\)\.linux-amd64\.tgz$#\1#p' |
+    grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | highest
 }
 
 source_url() {
-	local arch
-	case $2 in
-	x86_64-linux) arch=linux-amd64 ;;
-	aarch64-linux) arch=linux-arm64 ;;
-	*) die "molt: no source for $2" ;;
-	esac
-	printf 'https://molt.cockroachdb.com/molt/cli/molt-%s.%s.tgz\n' "$1" "$arch"
+  local arch
+  case $2 in
+  x86_64-linux) arch=linux-amd64 ;;
+  aarch64-linux) arch=linux-arm64 ;;
+  *) die "molt: no source for $2" ;;
+  esac
+  printf 'https://molt.cockroachdb.com/molt/cli/molt-%s.%s.tgz\n' "$1" "$arch"
 }
 
 verify_version() {
-	local got
-	got=$(nix run "$repo#molt" -- --version | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -n1)
-	[ "$got" = "$1" ] || die "molt reports '$got', expected '$1'"
+  local got
+  got=$(nix run "$repo#molt" -- --version | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -n1)
+  [ "$got" = "$1" ] || die "molt reports '$got', expected '$1'"
 }
