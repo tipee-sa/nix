@@ -1,17 +1,17 @@
 {
-  "version": "2.1.0",
+  "version": "2.1.1",
   "sources": {
     "x86_64-linux": {
-      "url": "https://releases.hashicorp.com/nomad/2.1.0/nomad_2.1.0_linux_amd64.zip",
-      "hash": "sha256-a1By+uNCdUYQBslC+WDChDgX3j8nq6szAMxpElOrkw8="
+      "url": "https://releases.hashicorp.com/nomad/2.1.1/nomad_2.1.1_linux_amd64.zip",
+      "hash": "sha256-CNi2h9+hSwQ71KK7S2KbCcqAYbfTzoGJQu3O2O/ZrH4="
     },
     "aarch64-linux": {
-      "url": "https://releases.hashicorp.com/nomad/2.1.0/nomad_2.1.0_linux_arm64.zip",
-      "hash": "sha256-0zTyjJJMwbw4xHuPiHR9WK1rzfPpFAl7gBFYT3+cYuA="
+      "url": "https://releases.hashicorp.com/nomad/2.1.1/nomad_2.1.1_linux_arm64.zip",
+      "hash": "sha256-5CL+zrihMHDNR2J9xShPB5Db80jIUbFHTEicF90tBQ8="
     },
     "aarch64-darwin": {
-      "url": "https://releases.hashicorp.com/nomad/2.1.0/nomad_2.1.0_darwin_arm64.zip",
-      "hash": "sha256-U6WR+ZkgG3Or8XnqDDUI/8+Cqk7jo3kb8Gq+jRGQs4Q="
+      "url": "https://releases.hashicorp.com/nomad/2.1.1/nomad_2.1.1_darwin_arm64.zip",
+      "hash": "sha256-0vqH04EkH6b2X7WQzhX1GmR74aAli7WIthL7FcOVChQ="
     }
   }
 }
