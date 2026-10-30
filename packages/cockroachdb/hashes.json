@@ -1,17 +1,17 @@
 {
-  "version": "26.3.3",
+  "version": "26.3.4",
   "sources": {
     "x86_64-linux": {
-      "url": "https://binaries.cockroachdb.com/cockroach-v26.3.3.linux-amd64.tgz",
-      "hash": "sha256-vhvtREEeNJypTvtMFrWEPtOftcTaKFdFX1n9Uryq2JU="
+      "url": "https://binaries.cockroachdb.com/cockroach-v26.3.4.linux-amd64.tgz",
+      "hash": "sha256-UIfgenioiwqCXIBVwJMwR/+A3Efj6mO6WShot2Aljf8="
     },
     "aarch64-linux": {
-      "url": "https://binaries.cockroachdb.com/cockroach-v26.3.3.linux-arm64.tgz",
-      "hash": "sha256-lev4PYowujwG4D/8q5EhyfsbxQL5I8RQXD6w3CY6/oo="
+      "url": "https://binaries.cockroachdb.com/cockroach-v26.3.4.linux-arm64.tgz",
+      "hash": "sha256-G8BwbR6XJQOKk8zma3KM8/F2fo9roF7ajeeqktzHuM8="
     },
     "aarch64-darwin": {
-      "url": "https://binaries.cockroachdb.com/cockroach-v26.3.3.darwin-11.0-arm64.tgz",
-      "hash": "sha256-qv2pkeOuMADVn+GPVGKGXjcjbuvI2bTGxyJ/5bUT+eM="
+      "url": "https://binaries.cockroachdb.com/cockroach-v26.3.4.darwin-11.0-arm64.tgz",
+      "hash": "sha256-g2XlYBpDhOmMBDxqYyb2HNSJU7g+4rIfHYNS6a6sFw4="
     }
   }
 }
